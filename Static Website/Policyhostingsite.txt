@@ -1,0 +1,67 @@
+HOSTING A STATIC WEBSITE:
+
+We are hosting a static website using S3, For security purpose to access the Website from public. We are updating the bucket policy to allow only the cloudfront distribution ID to have the access.
+
+BUCKET POLICY:
+
+PUBLIC ACCESS
+
+"Version": "2012-10-17",
+"Statement":
+[
+{
+	"Sid" : "AllowListBucket",
+	"Effect" : "Allow",
+	"Principal" : "*",
+	"Action" : "s3:ListBucket",
+	"Resource" : "arn:aws:s3:::your-bucket-name/*"
+},
+{
+	"Sid" : "GetBuckets",
+	"Effect" : "Allow",
+	"Principal" : "*",
+	"Action" : "s3:GetObject",
+	"Resource" : "arn:aws:s3:::your-bucket-name/*"
+}
+]
+
+
+UPDATED POLICY FOR FINE TUNE CONTROL:
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowCloudFrontAccessOnly",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "cloudfront.amazonaws.com"
+            },
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::sdkwebpract1/*",
+            "Condition": {
+                "StringEquals": {
+                    "AWS:SourceArn": "arn:aws:cloudfront::Account-Num:distribution/Distribution-ID"
+                }
+            }
+        },
+        {
+            "Sid": "AWSLogDeliveryWrite1",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "delivery.logs.amazonaws.com"
+            },
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::sdkwebpract1/AWSLogs/Account-Num/CloudFront/*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:SourceAccount": "381492290540",
+                    "s3:x-amz-acl": "bucket-owner-full-control"
+                },
+                "ArnLike": {
+                    "aws:SourceArn": "arn:aws:cloudfront::Account-Num:distribution/Distribution-ID"
+                }
+            }
+        }
+    ]
+}
