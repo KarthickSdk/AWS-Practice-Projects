@@ -1,0 +1,4 @@
+Project Name: Serverless Contact Form Using AWS Lambda, API Gateway, and DynamoDB
+
+Serverless Contact Form with AWS Lambda, API Gateway, and DynamoDB
+Developed and deployed a serverless contact form that accepts user input via HTML frontend, triggers an AWS Lambda function through API Gateway (with proxy integration), and stores data in DynamoDB. Integrated CloudWatch for monitoring and debugging; followed best practices in IAM and error handling.
