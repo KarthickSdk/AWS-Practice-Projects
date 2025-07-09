@@ -1,1 +1,0 @@
-This project provisions a complete AWS infrastructure using Terraform and deploys a demo application on an Ubuntu EC2 instance. It demonstrates Infrastructure as Code (IaC) best practices, secure network design, and automated provisioning.
