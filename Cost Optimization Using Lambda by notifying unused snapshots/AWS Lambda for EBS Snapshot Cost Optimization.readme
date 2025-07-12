@@ -1,0 +1,70 @@
+Project: AWS Lambda for EBS Snapshot Cost Optimization
+
+
+Summary: 
+This project uses AWS Lambda to automatically detect unused EBS snapshots and send notifications via SNS to alert relevant stakeholders. It helps identify storage that may incur unnecessary costs, supporting AWS cost optimization best practices.
+
+Implementation Steps:
+- Scans all EBS snapshots created in the account
+
+- Checks if the snapshot's volume is attached to any running EC2 instance
+
+- Publishes SNS notification with unused snapshot details
+
+- Serverless implementation using Lambda
+
+Technologies Used for Service Purpose:
+- AWS Lambda [Serverless compute engine]
+
+- AWS EC2 [To access snapshot and volume data]
+
+- AWS SNS [To send alerts]
+
+- boto3 (Python) [AWS SDK used within Lambda]
+
+- IAM Role [To grant Lambda necessary access]
+
+
+PYTHON CODE:
+
+import boto3
+
+ec2 = boto3.client('ec2')
+sns = boto3.client('sns')
+
+SNS_TOPIC_ARN = 'arn:aws:sns:<region>:<account-id>:snstopic'
+
+def lambda_handler(event, context):
+    snapshots = ec2.describe_snapshots(OwnerIds=['self'])['Snapshots']
+    volumes = ec2.describe_volumes(Filters=[{'Name': 'status', 'Values': ['in-use']}])['Volumes']
+    attached_volume_ids = set(v['VolumeId'] for v in volumes)
+
+    unused_snapshots = []
+
+    for snapshot in snapshots:
+        if snapshot.get('VolumeId') not in attached_volume_ids:
+            unused_snapshots.append(snapshot)
+
+    if unused_snapshots:
+        message = "Unused EBS Snapshots (may incur cost):\n\n"
+        for snap in unused_snapshots:
+            message += (
+                f"Snapshot ID: {snap['SnapshotId']}\n"
+                f"Volume ID: {snap.get('VolumeId', 'N/A')}\n"
+                f"Start Time: {snap['StartTime']}\n"
+                f"Size: {snap['VolumeSize']} GB\n"
+                f"Description: {snap.get('Description', 'No description')}\n\n"
+            )
+
+        sns.publish(
+            TopicArn=SNS_TOPIC_ARN,
+            Subject="⚠️ Unused EBS Snapshots Detected",
+            Message=message
+        )
+
+Required IAM Permissions
+
+Ensure the Lambda role has this policy:
+
+"ec2:DescribeSnapshots","ec2:DescribeVolumes","sns:Publish"
+
